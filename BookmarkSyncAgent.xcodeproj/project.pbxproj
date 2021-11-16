@@ -35,8 +35,9 @@
 		744B43242741387C00D3FA39 /* libxml2.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libxml2.tbd; path = usr/lib/libxml2.tbd; sourceTree = SDKROOT; };
 		744FD7CB27423580006B474E /* DataStoreFactory.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = DataStoreFactory.cpp; sourceTree = "<group>"; };
 		744FD7CC27423580006B474E /* DataStoreFactory.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = DataStoreFactory.hpp; sourceTree = "<group>"; };
-		74F7C3AA27417C8A00E4CA61 /* IDataStore.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IDataStore.h; sourceTree = "<group>"; };
-		74F7C3AB2741845E00E4CA61 /* Bookmark.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Bookmark.h; sourceTree = "<group>"; };
+		748E448E274424ED00801879 /* BookmarkSyncAgent_p.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = BookmarkSyncAgent_p.hpp; sourceTree = "<group>"; };
+		74F7C3AA27417C8A00E4CA61 /* IDataStore.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = IDataStore.hpp; sourceTree = "<group>"; };
+		74F7C3AB2741845E00E4CA61 /* Bookmark.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = Bookmark.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,10 +76,11 @@
 				742BFD63274106A9006797AF /* main.cpp */,
 				742BFD9C2741125E006797AF /* BookmarkSyncAgent.cpp */,
 				742BFD9D2741125E006797AF /* BookmarkSyncAgent.hpp */,
-				74F7C3AA27417C8A00E4CA61 /* IDataStore.h */,
-				74F7C3AB2741845E00E4CA61 /* Bookmark.h */,
+				74F7C3AA27417C8A00E4CA61 /* IDataStore.hpp */,
+				74F7C3AB2741845E00E4CA61 /* Bookmark.hpp */,
 				744FD7CB27423580006B474E /* DataStoreFactory.cpp */,
 				744FD7CC27423580006B474E /* DataStoreFactory.hpp */,
+				748E448E274424ED00801879 /* BookmarkSyncAgent_p.hpp */,
 			);
 			path = BookmarkSyncAgent;
 			sourceTree = "<group>";

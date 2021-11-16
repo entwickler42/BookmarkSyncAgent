@@ -22,6 +22,7 @@ public:
     {}
 };
 
+
 IDataStore* DataStoreFactory::create(const std::string& name)
 {
     IDataStore* data_store = 0;
