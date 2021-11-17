@@ -4,7 +4,7 @@
 #define DataStoreFactory_hpp
 
 #include <string>
-#include "IDataStore.h"
+#include "IDataStore.hpp"
 
 class DataStoreFactory
 {

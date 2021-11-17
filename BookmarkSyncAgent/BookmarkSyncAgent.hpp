@@ -3,11 +3,11 @@
 
 class BookmarkSyncAgentPrivate;
 
-class BookmarkSyncAgent
+class BookmarkSyncAgent final
 {
 public:
     BookmarkSyncAgent();
-    virtual ~BookmarkSyncAgent();
+    ~BookmarkSyncAgent();
     
     void runAgent();
     

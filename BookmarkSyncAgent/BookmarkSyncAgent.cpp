@@ -19,7 +19,3 @@ void BookmarkSyncAgent::runAgent()
     d->destroyDataStores();
     d->closeDatabase();
 }
-
-
-
-
