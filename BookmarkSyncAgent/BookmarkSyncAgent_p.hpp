@@ -22,7 +22,7 @@ struct DataStoreDefinition
     std::string arguments;
 };
 
-class BookmarkSyncAgentPrivate
+class BookmarkSyncAgentPrivate final
 {
 public:
     ~BookmarkSyncAgentPrivate()
@@ -45,6 +45,8 @@ public:
     
     void closeDatabase()
     {
+        assert(NULL != m_Database);
+        
         if(NULL != m_Database){
             sqlite3_close(m_Database);
             m_Database = NULL;
@@ -54,7 +56,7 @@ public:
     std::vector<DataStoreDefinition> fetchDataStoresDefinition()
     {
         std::vector<DataStoreDefinition> definitions;
-        char *sql_error = 0;
+        char *sql_errmsg = 0;
         int sql_code;
     
         sql_code = sqlite3_exec(
@@ -62,15 +64,10 @@ public:
                                 "SELECT Name, Class, Arguments FROM DataStores",
                                 fetchDataStoresDefinitionCallback,
                                 reinterpret_cast<void*>(&definitions),
-                                &sql_error
+                                &sql_errmsg
                                 );
         
-        if(sql_code != SQLITE_OK){
-            std::ostringstream msg;
-            msg << "SQL error: " << sql_error;
-            sqlite3_free(sql_error);
-            throw std::runtime_error(msg.str());
-        }
+        throwAndFreeOnError("fetchDataStoresDefinition", sql_code, sql_errmsg);
         
         return definitions;
     }
@@ -98,15 +95,59 @@ public:
     }
     
     void fetchDataStoresToDatabase()
-    {}
+    {
+        for(auto& i : m_DataStores) {
+            bulkUpdateBookmarkFlags(i->name(), IDataStore::FLAG_OUTDATED);
+        }
+        
+        insertOrUpdateBookmarksIntoTable("", "", "", IDataStore::FLAG_UPTODATE);
+    }
     
     void putDatabaseToDataStores()
     {}
     
-    std::vector<IDataStore*> m_DataStores;
-    
 private:
     sqlite3 *m_Database = NULL;
+    std::vector<IDataStore*> m_DataStores;
+    
+    void throwAndFreeOnError(const std::string& origin, int sqlCode, char* sqlError)
+    {
+        if(sqlCode != SQLITE_OK){
+            std::ostringstream msg;
+            msg << "Sqlite3 error at " << origin << ": " << sqlError;
+            sqlite3_free(sqlError);
+            throw std::runtime_error(msg.str());
+        }
+    }
+    
+    void executeSQL(const std::string& origin, const std::string& sql)
+    {
+        int sql_code;
+        char* sql_errmsg;
+        
+        sql_code = sqlite3_exec(m_Database, sql.c_str(), NULL, NULL, &sql_errmsg);
+        throwAndFreeOnError(origin, sql_code, sql_errmsg);
+    }
+    
+    void bulkUpdateBookmarkFlags(const std::string& dataSource, int32_t flags)
+    {
+        std::ostringstream update;
+        
+        update << "UPDATE BOOKMARKS SET flags =" << std::to_string(flags) << " where DataSource = " << "'" << dataSource << "'";
+        
+        executeSQL("bulkUpdateBookmarkFlags", update.str());
+    }
+    
+    void insertOrUpdateBookmarksIntoTable(const std::string& dataSource, const std::string& path, const std::string& url, int32_t flags)
+    {
+        std::ostringstream insert;
+        
+        insert << "INSERT OR REPLACE INTO ";
+        insert << "Bookmarks(DatSource, Flags, Path, Url) ";
+        insert << "VALUES(" << "'" << dataSource << "'" << "," << std::to_string(flags) << "," << "'" << path << "'" << "," << "'" << url << "'" << ")";
+        
+        executeSQL("insertOrUpdateBookmarksIntoTable", insert.str());
+    }
     
     static int fetchDataStoresDefinitionCallback(void *rval, int argc, char **argv, char **azColName)
     {
