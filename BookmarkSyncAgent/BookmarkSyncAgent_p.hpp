@@ -15,13 +15,6 @@
 #define DBPATH "/Users/stb/dev/BookmarkSync/Database/database.db"
 #endif
 
-struct DataStoreDefinition
-{
-    std::string name;
-    std::string classname;
-    std::string arguments;
-};
-
 class BookmarkSyncAgentPrivate final
 {
 public:
@@ -61,14 +54,11 @@ public:
     {
         destroyDataStores();
         
-        for(DataStoreDefinition& i : fetchDataStoresDefinition()){
-            IDataStore* ds = DataStoreFactory::create(i.classname);
-            if(NULL == ds) {
-                throw std::invalid_argument(i.classname);
-            }
-            std::cout << "DataStore constructed successfully: " << i.name << std::endl;
-            m_DataStores.push_back(ds);
-        }
+        executeSQL("constructDataStores",
+                   "SELECT Name, Class, Arguments FROM DataStores",
+                   constructDataStoresCallback,
+                   reinterpret_cast<void*>(&m_DataStores)
+                   );
     }
     
     void fetchDataStoresToDatabase() const
@@ -76,23 +66,8 @@ public:
         for(auto& i : m_DataStores) {
             bulkUpdateBookmarkFlags(i->name(), IDataStore::FLAG_OUTDATED);
         }
+    
         
-        bulkUpdateBookmarkFlags("DataStoreSafari", IDataStore::FLAG_OUTDATED);
-        bulkUpdateBookmarkFlags("DataStoreChrome", IDataStore::FLAG_OUTDATED);
-        
-        // insertOrUpdateBookmarksIntoTable("DataStoreSafari", "bookmarks.folder1.1", "protocol.domain.website.1", IDataStore::FLAG_UPTODATE);
-        // insertOrUpdateBookmarksIntoTable("DataStoreSafari", "bookmarks.folder1.2", "protocol.domain.website.2", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreSafari", "bookmarks.folder1.3", "protocol.domain.website.3", IDataStore::FLAG_OUTDATED);
-        insertOrUpdateBookmarksIntoTable("DataStoreSafari", "bookmarks.folder2.1", "protocol.domain.website.4", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreSafari", "bookmarks.folder2.2", "protocol.domain.website.5", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreSafari", "bookmarks.folder2.3", "protocol.domain.website.6", IDataStore::FLAG_UPTODATE);
-
-        insertOrUpdateBookmarksIntoTable("DataStoreChrome", "bookmarks.folder1.1", "protocol.domain.website.1", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreChrome", "bookmarks.folder1.2", "protocol.domain.website.2", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreChrome", "bookmarks.folder1.3", "protocol.domain.website.3", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreChrome", "bookmarks.folder2.1", "protocol.domain.website.4", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreChrome", "bookmarks.folder2.2", "protocol.domain.website.5", IDataStore::FLAG_UPTODATE);
-        insertOrUpdateBookmarksIntoTable("DataStoreChrome", "bookmarks.folder2.3", "protocol.domain.website.6", IDataStore::FLAG_UPTODATE);
     }
     
     void putDatabaseToDataStores() const
@@ -143,19 +118,6 @@ private:
         executeSQL("insertOrUpdateBookmarksIntoTable", insert.str());
     }
     
-    std::vector<DataStoreDefinition> fetchDataStoresDefinition() const
-    {
-        std::vector<DataStoreDefinition> definitions;
-        
-        executeSQL("fetchDataStoresDefinition",
-                   "SELECT Name, Class, Arguments FROM DataStores",
-                   fetchDataStoresDefinitionCallback,
-                   reinterpret_cast<void*>(&definitions)
-                   );
-        
-        return definitions;
-    }
-    
     Bookmarks fetchCombinedBookmarks() const
     {
         Bookmarks bookmarks;
@@ -184,18 +146,24 @@ private:
         return 0;
     }
     
-    static int fetchDataStoresDefinitionCallback(void *rval, int argc, char **argv, char **azColName)
+    static int constructDataStoresCallback(void *rval, int argc, char **argv, char **azColName)
     {
         if (argc != 3){
             throw std::out_of_range("Unexpected number of values returned from tabe: DataSources");
         }
-
-        std::vector<DataStoreDefinition>* definitions = reinterpret_cast<std::vector<DataStoreDefinition>* >(rval);
-        definitions->push_back({
-            std::string(argv[0]),
-            std::string(argv[1]),
-            std::string(argv[2])
-        });
+        
+        std::string name = std::string(argv[0]);
+        std::string classname = std::string(argv[1]);
+        std::string arguments = std::string(argv[2]);
+        
+        IDataStore* ds = DataStoreFactory::create(classname, name, arguments);
+        if(NULL == ds) {
+            throw std::invalid_argument(classname);
+        }
+        std::cout << "DataStore constructed successfully: " << classname << std::endl;
+        
+        std::vector<IDataStore*>* datastores = reinterpret_cast<std::vector<IDataStore*>*>(rval);
+        datastores->push_back(ds);
         
         return 0;
     }

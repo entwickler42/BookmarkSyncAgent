@@ -1,10 +1,10 @@
 #ifndef IDataStore_h
 #define IDataStore_h
 
-#include "Bookmark.hpp"
+#include <string>
 #include <map>
 
-
+#include "Bookmark.hpp"
 
 class IDataStore
 {
@@ -18,10 +18,18 @@ public:
     virtual ~IDataStore()
     {}
     
-    virtual std::string name() = 0;
+    std::string name() { return _name; } const
+    std::string arguments() { return _arguments; } const
+    
+    virtual void setName(std::string name) { _name = name; }
+    virtual void setArguments(std::string arguments) { _arguments = arguments; }
     
     virtual Bookmarks fetchData() = 0;
     virtual void putData(const Bookmarks& bookmarks) = 0;
+    
+private:
+    std::string _arguments;
+    std::string _name;
 };
 
 

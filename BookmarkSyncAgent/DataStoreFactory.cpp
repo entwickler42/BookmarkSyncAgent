@@ -23,7 +23,7 @@ public:
 };
 
 
-IDataStore* DataStoreFactory::create(const std::string& name)
+IDataStore* DataStoreFactory::create(const std::string& classname, const std::string& name, const std::string& arguments)
 {
     IDataStore* data_store = 0;
     
@@ -32,8 +32,10 @@ IDataStore* DataStoreFactory::create(const std::string& name)
         { "DataStoreSafari", []() { return new DebugDataStore(); } }
     };
     
-    if(types.find(name) != types.end()){
-        data_store = types[name]();
+    if(types.find(classname) != types.end()){
+        data_store = types[classname]();
+        data_store->setName(name);
+        data_store->setArguments(arguments);
     }
     
     return data_store;

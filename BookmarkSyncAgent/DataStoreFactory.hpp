@@ -9,7 +9,7 @@
 class DataStoreFactory
 {
 public:
-    static IDataStore* create(const std::string& name);
+    static IDataStore* create(const std::string& classname, const std::string& name, const std::string& arguments);
     
 protected:
     DataStoreFactory() {}
