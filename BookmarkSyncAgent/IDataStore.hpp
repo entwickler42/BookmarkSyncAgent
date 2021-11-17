@@ -1,12 +1,20 @@
 #ifndef IDataStore_h
 #define IDataStore_h
 
-#include "Bookmark.h"
+#include "Bookmark.hpp"
 #include <map>
+
+
 
 class IDataStore
 {
 public:
+    enum DataStoreFlags {
+        FLAG_NONE = 0x00,
+        FLAG_OUTDATED = 0x01,
+        FLAG_UPTODATE = 0x02
+    };
+    
     virtual ~IDataStore()
     {}
     
