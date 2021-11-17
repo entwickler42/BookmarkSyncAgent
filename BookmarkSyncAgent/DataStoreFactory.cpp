@@ -3,7 +3,7 @@
 #include <functional>
 #include <map>
 
-class foo : public IDataStore
+class DebugDataStore : public IDataStore
 {
 public:
     std::string name()
@@ -28,8 +28,8 @@ IDataStore* DataStoreFactory::create(const std::string& name)
     IDataStore* data_store = 0;
     
     std::map<std::string, std::function<IDataStore*(void)>> types {
-        { "Foo", []() { return new foo(); } },
-        { "Baa", []() { return new foo(); } }
+        { "DataStoreChrome", []() { return new DebugDataStore(); } },
+        { "DataStoreSafari", []() { return new DebugDataStore(); } }
     };
     
     if(types.find(name) != types.end()){
